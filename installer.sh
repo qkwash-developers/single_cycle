@@ -8,7 +8,7 @@ echo "=============================="
 
 # Step 1: Install required system packages
 echo "[1/6] 📦 Installing system packages..."
-sudo apt update
+# sudo apt update
 sudo apt install -y python3 python3-pip python3-dev build-essential redis-server python3-rpi.gpio git
 
 # Step 2: Enable and start services
