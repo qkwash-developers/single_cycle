@@ -1,99 +1,59 @@
 #!/bin/bash
 
-set -e  # Exit immediately if a command fails
+SERVICE_NAME="run_python_programs"
+SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+SCRIPT_DIR="$(pwd)"
+SCRIPT_PATH="${SCRIPT_DIR}/run_python_programs.sh"
+VENV_PATH="${SCRIPT_DIR}/project_env"
+PYTHON_BIN="${VENV_PATH}/bin/python"
 
-echo "=============================="
-echo " 🔧 Full System Setup Script"
-echo "=============================="
+echo "Checking for existing service..."
 
+# If service file exists, stop and remove the service
+if systemctl list-units --full -all | grep -Fq "${SERVICE_NAME}.service"; then
+    echo "Stopping existing service..."
+    sudo systemctl stop "${SERVICE_NAME}.service"
 
+    echo "Disabling existing service..."
+    sudo systemctl disable "${SERVICE_NAME}.service"
 
-# Step 2: Install required system packages (removed 'pigpio' from apt)
-echo "[2/7] 📦 Installing system packages..."
-sudo apt install -y python3 python3-pip python3-venv python3-dev build-essential redis-server python3-rpi.gpio git
-
-# Step 3: Enable and start services
-echo "[3/7] ⚙️ Enabling and starting services..."
-
-# Check if pigpiod exists
-if ! command -v pigpiod &> /dev/null; then
-    echo "  ➤ 'pigpiod' not found. Installing manually from source..."
-    git clone https://github.com/joan2937/pigpio.git
-    cd pigpio
-    make
-    sudo make install
-    cd ..
-    rm -rf pigpio
+    echo "Removing old service file..."
+    sudo rm -f "${SERVICE_FILE}"
 fi
 
-# Enable and start pigpiod
-if ! pgrep pigpiod > /dev/null; then
-    echo "  ➤ Starting pigpiod..."
-    sudo systemctl enable pigpiod  # Enable autostart on boot
-    sudo systemctl start pigpiod   # Start the pigpiod service immediately
-else
-    echo "  ➤ pigpiod already running."
-fi
+echo "Creating new systemd service file at ${SERVICE_FILE}..."
 
-# Enable and start redis-server
-echo "  ➤ Ensuring redis-server is running..."
-sudo systemctl enable redis-server
-sudo systemctl start redis-server
+# Write new systemd service
+sudo bash -c "cat > ${SERVICE_FILE}" <<EOF
+[Unit]
+Description=Run Python Programs on Startup
+After=network.target
 
-# Step 4: Optional - Create virtual environment
-ENV_NAME="project_env"
-if [ ! -d "$ENV_NAME" ]; then
-    echo "[4/7] 🧪 Creating virtual environment: $ENV_NAME"
-    python3 -m venv "$ENV_NAME"
-fi
-source "$ENV_NAME/bin/activate"
+[Service]
+Type=simple
+ExecStart=${PYTHON_BIN} ${SCRIPT_PATH}
+WorkingDirectory=${SCRIPT_DIR}
+StandardOutput=journal
+StandardError=journal
+Restart=always
+User=$(whoami)
+Environment=PATH=${VENV_PATH}/bin:/usr/bin:/bin
+Environment=PYTHONUNBUFFERED=1
 
-# Step 5: Install required Python packages
-echo "[5/7] 🐍 Installing Python dependencies..."
-pip install --upgrade pip
-pip install requests posix_ipc pigpio RPi.GPIO python-dotenv
+[Install]
+WantedBy=multi-user.target
+EOF
 
-# Step 6: Custom module install (uncomment if needed)
-# echo "[6/7] Installing from requirements.txt..."
-# pip install -r requirements.txt
+echo "Making the script executable..."
+sudo chmod +x "${SCRIPT_PATH}"
 
-# Step 7: Verification of critical services
-echo "[7/7] ✅ Verifying pigpiod service..."
-if pgrep pigpiod > /dev/null; then
-    echo "  ✔ pigpiod is running."
-else
-    echo "  ❌ pigpiod failed to start."
-    exit 1
-fi
+echo "Reloading systemd daemon..."
+sudo systemctl daemon-reload
 
-echo "🎉 Environment setup complete."
+echo "Enabling the new service..."
+sudo systemctl enable "${SERVICE_NAME}.service"
 
-# ==============================
-# Sudoers Configuration for Passwordless Restart of Service
-# ==============================
+echo "Starting the new service..."
+sudo systemctl start "${SERVICE_NAME}.service"
 
-# Name of the user (change if needed)
-USERNAME=$(whoami)
-
-# Command to be granted passwordless sudo
-SERVICE_CMD="/bin/systemctl restart run_python_programs.service"
-
-# Sudoers file for custom command
-SUDOERS_FILE="/etc/sudoers.d/${USERNAME}_nopasswd_service"
-
-# Check if already exists
-if sudo test -f "$SUDOERS_FILE"; then
-    echo "[INFO] Sudoers file already exists: $SUDOERS_FILE"
-else
-    echo "[INFO] Creating sudoers rule for $USERNAME to restart the service without password."
-
-    # Add the rule
-    echo "$USERNAME ALL=(ALL) NOPASSWD: $SERVICE_CMD" | sudo tee "$SUDOERS_FILE" > /dev/null
-
-    # Set correct permissions
-    sudo chmod 440 "$SUDOERS_FILE"
-
-    echo "[SUCCESS] Rule added. You can now run:"
-    echo "  sudo systemctl restart run_python_programs.service"
-    echo "without being prompted for a password."
-fi
+echo "✅ Service '${SERVICE_NAME}' is now active and will start on boot."
