@@ -6,9 +6,9 @@ echo "=============================="
 echo " 🔧 Full System Setup Script"
 echo "=============================="
 
-# Step 1: Update and upgrade system packages
-echo "[1/7] 🔄 Updating system..."
-sudo apt update && sudo apt upgrade -y
+# Step 1: Update system package index only (no upgrade!)
+echo "[1/7] 🔄 Updating package index..."
+sudo apt update
 
 # Step 2: Install required system packages
 echo "[2/7] 📦 Installing system packages..."
