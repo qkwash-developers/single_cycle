@@ -4,8 +4,6 @@ SERVICE_NAME="run_python_programs"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 SCRIPT_DIR="$(pwd)"
 SCRIPT_PATH="${SCRIPT_DIR}/run_python_programs.sh"
-VENV_PATH="${SCRIPT_DIR}/project_env"
-PYTHON_BIN="${VENV_PATH}/bin/python"
 
 echo "Checking for existing service..."
 
@@ -30,15 +28,12 @@ Description=Run Python Programs on Startup
 After=network.target
 
 [Service]
-Type=simple
-ExecStart=${PYTHON_BIN} ${SCRIPT_PATH}
+ExecStart=/bin/bash ${SCRIPT_PATH}
 WorkingDirectory=${SCRIPT_DIR}
 StandardOutput=journal
 StandardError=journal
 Restart=always
 User=$(whoami)
-Environment=PATH=${VENV_PATH}/bin:/usr/bin:/bin
-Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target
