@@ -7,6 +7,7 @@ echo " 🔧 Full System Setup Script"
 echo "=============================="
 
 
+
 # Step 2: Install required system packages (removed 'pigpio' from apt)
 echo "[2/7] 📦 Installing system packages..."
 sudo apt install -y python3 python3-pip python3-venv python3-dev build-essential redis-server python3-rpi.gpio git
@@ -50,7 +51,7 @@ source "$ENV_NAME/bin/activate"
 # Step 5: Install required Python packages
 echo "[5/7] 🐍 Installing Python dependencies..."
 pip install --upgrade pip
-pip install requests posix_ipc pigpio RPi.GPIO
+pip install requests posix_ipc pigpio RPi.GPIO python-dotenv
 
 # Step 6: Custom module install (uncomment if needed)
 # echo "[6/7] Installing from requirements.txt..."

@@ -1,8 +1,13 @@
+import os
 import requests
 import time
 import threading
 import subprocess
 from shared_memory_util import write_data_to_shared_memory
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 class JobChecker(threading.Thread):
     def __init__(self):
@@ -10,14 +15,14 @@ class JobChecker(threading.Thread):
         self.daemon = True
         self._stop_event = threading.Event()
         
-        # API configuration
-        self.api_url = "http://srv630050.hstgr.cloud:3000/api/device/checkjobs"
-        self.hub_id = "17348502838715973"
-        self.device_id = 1000
+        # API configuration from environment variables
+        self.api_url = os.getenv("API_URL")
+        self.hub_id = os.getenv("HUB_ID")
+        self.device_id = int(os.getenv("DEVICE_ID"))
         
-        # Request configuration
-        self.request_timeout = 10  # seconds
-        self.check_interval = 5    # seconds between API checks
+        # Request configuration from environment variables
+        self.request_timeout = int(os.getenv("REQUEST_TIMEOUT", 10))  # default to 10 if not set
+        self.check_interval = int(os.getenv("CHECK_INTERVAL", 5))    # default to 5 if not set
         
     def check_jobs(self):
         """
@@ -35,7 +40,6 @@ class JobChecker(threading.Thread):
                 json=data,
                 timeout=self.request_timeout
             )
-            # print("API response:", response.text)
             
             if response.status_code == 200:
                 # Process successful response
@@ -52,8 +56,6 @@ class JobChecker(threading.Thread):
                         device_status = 1000.0
                 except ValueError:
                     device_status = 1000.0
-
-                # print(f"deviceStatus: {device_status_raw} (numeric: {device_status}), washModeValue: {washModeValue}")
 
                 # Write to shared memory
                 write_data_to_shared_memory("command_from_server", device_status)

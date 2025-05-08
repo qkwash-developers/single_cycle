@@ -2,6 +2,8 @@ import time
 import threading
 import requests
 import json
+from dotenv import load_dotenv
+import os
 from shared_memory_util import read_data_from_shared_memory, write_data_to_shared_memory
 
 
@@ -11,6 +13,10 @@ class WashingMachineControllerHeavy(threading.Thread):
         self.daemon = True
         self._stop_event = threading.Event()
         
+          
+        # Load environment variables from .env file
+        load_dotenv()  # <-- This line loads the environment variables
+
         # Instance variables for shared memory values
         self.door_status = None
         self.triac_delay = None
@@ -19,11 +25,19 @@ class WashingMachineControllerHeavy(threading.Thread):
         self.command = 1000.0
         self.command_mode = 1000.0
         
-        # API configuration
-        self.hub_id = "17348502838715973"
-        self.device_id = 1000
-        self.api_base_url = "http://srv630050.hstgr.cloud:3000/api/users"
 
+
+        # API configuration from environment variables (no defaults)
+        self.hub_id = os.getenv("HUB_ID")
+        self.device_id = int(os.getenv("DEVICE_ID"))
+        self.api_base_url = os.getenv("API_BASE_URL")
+
+        # Raise error if any environment variable is missing
+        if not self.hub_id or not self.device_id or not self.api_base_url:
+            raise ValueError("Missing one or more required environment variables: HUB_ID, DEVICE_ID, API_BASE_URL")
+        
+
+        
     def update_ready(self):
         url = f"{self.api_base_url}/updateReady"
         data = {
