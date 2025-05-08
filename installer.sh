@@ -10,12 +10,23 @@ echo "=============================="
 echo "[1/7] 🔄 Updating package index..."
 sudo apt update
 
-# Step 2: Install required system packages
+# Step 2: Install required system packages (removed 'pigpio' from apt)
 echo "[2/7] 📦 Installing system packages..."
-sudo apt install -y python3 python3-pip python3-venv python3-dev build-essential pigpio redis-server python3-rpi.gpio
+sudo apt install -y python3 python3-pip python3-venv python3-dev build-essential redis-server python3-rpi.gpio git
 
 # Step 3: Enable and start services
 echo "[3/7] ⚙️ Enabling and starting services..."
+
+# Check if pigpiod exists
+if ! command -v pigpiod &> /dev/null; then
+    echo "  ➤ 'pigpiod' not found. Installing manually from source..."
+    git clone https://github.com/joan2937/pigpio.git
+    cd pigpio
+    make
+    sudo make install
+    cd ..
+    rm -rf pigpio
+fi
 
 # Enable and start pigpiod
 if ! pgrep pigpiod > /dev/null; then
