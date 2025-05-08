@@ -1,7 +1,9 @@
 #!/bin/bash
 
+SCRIPT_D="$(pwd)"
+
 # Directory containing your Python programs
-SCRIPT_DIR="/home/dtrgenh1d1/code/single_cycle"
+SCRIPT_DIR="${SCRIPT_D}"
 
 # Array of Python script names
 SCRIPTS=(
