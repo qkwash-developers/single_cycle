@@ -4,8 +4,7 @@ SERVICE_NAME="run_python_programs"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 SCRIPT_DIR="$(pwd)"
 SCRIPT_PATH="${SCRIPT_DIR}/run_python_programs.sh"
-VENV_PATH="${SCRIPT_DIR}/project_env"
-PYTHON_BIN="${VENV_PATH}/bin/python"
+PYTHON_BIN="/usr/bin/python3"
 
 echo "Checking for existing service..."
 
@@ -37,7 +36,6 @@ StandardOutput=journal
 StandardError=journal
 Restart=always
 User=$(whoami)
-Environment=PATH=${VENV_PATH}/bin:/usr/bin:/bin
 Environment=PYTHONUNBUFFERED=1
 
 [Install]
