@@ -7,7 +7,6 @@ echo " 🔧 Full System Setup Script"
 echo "=============================="
 
 
-
 # Step 2: Install required system packages (removed 'pigpio' from apt)
 echo "[2/7] 📦 Installing system packages..."
 sudo apt install -y python3 python3-pip python3-venv python3-dev build-essential redis-server python3-rpi.gpio git
@@ -29,8 +28,8 @@ fi
 # Enable and start pigpiod
 if ! pgrep pigpiod > /dev/null; then
     echo "  ➤ Starting pigpiod..."
-    sudo systemctl enable pigpiod
-    sudo systemctl start pigpiod
+    sudo systemctl enable pigpiod  # Enable autostart on boot
+    sudo systemctl start pigpiod   # Start the pigpiod service immediately
 else
     echo "  ➤ pigpiod already running."
 fi
@@ -67,3 +66,33 @@ else
 fi
 
 echo "🎉 Environment setup complete."
+
+# ==============================
+# Sudoers Configuration for Passwordless Restart of Service
+# ==============================
+
+# Name of the user (change if needed)
+USERNAME=$(whoami)
+
+# Command to be granted passwordless sudo
+SERVICE_CMD="/bin/systemctl restart run_python_programs.service"
+
+# Sudoers file for custom command
+SUDOERS_FILE="/etc/sudoers.d/${USERNAME}_nopasswd_service"
+
+# Check if already exists
+if sudo test -f "$SUDOERS_FILE"; then
+    echo "[INFO] Sudoers file already exists: $SUDOERS_FILE"
+else
+    echo "[INFO] Creating sudoers rule for $USERNAME to restart the service without password."
+
+    # Add the rule
+    echo "$USERNAME ALL=(ALL) NOPASSWD: $SERVICE_CMD" | sudo tee "$SUDOERS_FILE" > /dev/null
+
+    # Set correct permissions
+    sudo chmod 440 "$SUDOERS_FILE"
+
+    echo "[SUCCESS] Rule added. You can now run:"
+    echo "  sudo systemctl restart run_python_programs.service"
+    echo "without being prompted for a password."
+fi
