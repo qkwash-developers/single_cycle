@@ -4,7 +4,7 @@ SERVICE_NAME="run_python_programs"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 SCRIPT_DIR="$(pwd)"
 SCRIPT_PATH="${SCRIPT_DIR}/run_python_programs.sh"
-PYTHON_BIN="/usr/bin/python3"
+USER_NAME=$(whoami)
 
 echo "Checking for existing service..."
 
@@ -30,12 +30,12 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=${PYTHON_BIN} ${SCRIPT_PATH}
+ExecStart=/bin/bash ${SCRIPT_PATH}
 WorkingDirectory=${SCRIPT_DIR}
 StandardOutput=journal
 StandardError=journal
 Restart=always
-User=$(whoami)
+User=${USER_NAME}
 Environment=PYTHONUNBUFFERED=1
 
 [Install]
