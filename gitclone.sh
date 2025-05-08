@@ -7,12 +7,19 @@ REPO_URL="https://github.com/qkwash-developers/single_cycle.git"
 TARGET_DIR="$HOME/single_cycle"
 
 # Check if the directory already exists
-if [ -d "$TARGET_DIR" ]; then
-    echo "Directory $TARGET_DIR already exists. Pulling the latest changes from the master branch..."
-    cd "$TARGET_DIR"
-    git checkout master   # Make sure you're on the master branch
-    git pull origin master
+if [ -d "$TARGET_DIR/.git" ]; then
+    echo "📁 Directory $TARGET_DIR already exists. Syncing with remote master branch..."
+    cd "$TARGET_DIR" || { echo "❌ Failed to access directory $TARGET_DIR"; exit 1; }
+
+    echo "🔄 Fetching latest changes from remote..."
+    git fetch origin
+
+    echo "⚙️  Resetting to origin/master (discarding local changes)..."
+    git reset --hard origin/master
+
+    echo "✅ Repository is now in sync with origin/master."
 else
-    echo "Cloning repository into $TARGET_DIR from the master branch..."
+    echo "📥 Cloning repository into $TARGET_DIR from the master branch..."
     git clone -b master "$REPO_URL" "$TARGET_DIR"
+    echo "✅ Repository cloned successfully."
 fi
