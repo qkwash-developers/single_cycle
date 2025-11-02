@@ -16,7 +16,7 @@ class JobChecker(threading.Thread):
         self._stop_event = threading.Event()
         
         # API configuration from environment variables
-        self.api_base_url = os.getenv("API_URL")
+        self.api_base_url = os.getenv("API_BASE_URL")
         self.api_url = f"{self.api_base_url}/device/checkjobs"
         self.hub_id = os.getenv("HUB_ID")
         self.device_id = int(os.getenv("DEVICE_ID"))
