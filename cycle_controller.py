@@ -626,7 +626,7 @@ class JobChecker(threading.Thread):
         self._stop_event = threading.Event()
         
         # API configuration
-        self.api_url = "http://srv630050.hstgr.cloud:3000/api/device/checkjobs"
+        self.api_url = "https://api.qkwash.com/api/device/checkjobs"
         self.hub_id = "17348502838715973"
         self.device_id = 1000
         

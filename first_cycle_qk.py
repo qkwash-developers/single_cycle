@@ -39,7 +39,7 @@ class WashingMachineControllerHeavy(threading.Thread):
 
         
     def update_ready(self):
-        url = f"{self.api_base_url}/updateReady"
+        url = f"{self.api_base_url}/users/updateReady"
         data = {
             "hubid": self.hub_id,
             "deviceid": self.device_id
@@ -50,7 +50,7 @@ class WashingMachineControllerHeavy(threading.Thread):
             pass
 
     def update_progress(self, progress):
-        url = f"{self.api_base_url}/updateProgress"
+        url = f"{self.api_base_url}/users/updateProgress"
         data = {
             "hubid": self.hub_id,
             "deviceid": self.device_id,
